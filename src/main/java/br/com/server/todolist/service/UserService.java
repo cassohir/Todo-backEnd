@@ -18,7 +18,6 @@ public class UserService {
         userModel.setPassword(passwordHashed);
         UserModel user = this.userRepository.findByUsername(userModel.getUsername());
         if(user != null) throw new Exception("User already exists");
-
         return this.userRepository.save(userModel);
     }
     public UserModel getByUsername(String username){

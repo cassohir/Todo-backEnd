@@ -4,6 +4,7 @@ import br.com.server.todolist.models.UserModel;
 import br.com.server.todolist.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -19,7 +20,7 @@ public class UserController {
     @PostMapping
     public ResponseEntity<?> create(@RequestBody UserModel userModel) {
         try {
-            return ResponseEntity.ok(userService.createUser(userModel));
+            return ResponseEntity.status(HttpStatus.CREATED).body(userService.createUser(userModel));
         } catch (Exception e){
             System.getLogger("UserController").log(System.Logger.Level.ERROR, e.getMessage());
             return ResponseEntity.badRequest().body(e.getMessage());

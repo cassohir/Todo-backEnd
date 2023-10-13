@@ -20,23 +20,22 @@ public class FilterTaskAuth extends OncePerRequestFilter {
 
     @Override
     public void doFilterInternal(HttpServletRequest servletRequest, HttpServletResponse servletResponse, FilterChain filterChain) throws IOException, ServletException {
-        String authorization = servletRequest.getHeader("Authorization").substring("Basic".length()).trim();
-        String authDecode = new String(Base64.getDecoder().decode(authorization));
-        String username = authDecode.split(":")[0];
-        String password = authDecode.split(":")[1];
-        UserModel user = userService.getByUsername(username);
-        if(user == null) {
-            servletResponse.sendError(401, "Unauthorized User");
-        } else {
-         BCrypt.Result verification =  BCrypt.verifyer().verify(password.toCharArray(), user.getPassword());
-            if (verification.verified){
-                filterChain.doFilter(servletRequest, servletResponse);
-            } else {
+        String servletPath =  servletRequest.getServletPath();
+        if(Paths.TASKS.getPath().startsWith(servletPath)){
+            String authorization = servletRequest.getHeader("Authorization").substring("Basic".length()).trim();
+            String authDecode = new String(Base64.getDecoder().decode(authorization));
+            UserModel user = userService.getByUsername(authDecode.split(":")[0]);
+            if(user == null) {
                 servletResponse.sendError(401, "Unauthorized User");
+            } else {
+                BCrypt.Result verification =  BCrypt.verifyer().verify(authDecode.split(":")[1].toCharArray(), user.getPassword());
+                if (verification.verified){
+                    servletRequest.setAttribute("idUser", user.getId());
+                    filterChain.doFilter(servletRequest, servletResponse);
+                } else {
+                    servletResponse.sendError(401, "Unauthorized User");
+                }
             }
-        }
-
-
-
+        } else  filterChain.doFilter(servletRequest,servletResponse);
     }
 }
